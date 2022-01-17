@@ -1,0 +1,42 @@
+FROM php:%%PHP_VERSION%%-fpm-%%PHP_DISTRO%%
+
+LABEL maintainer="lukas.gruber@viucom.de"
+
+ENV COMPOSER_HOME=/var/www/.composer
+ENV COMPOSER_MEMORY_LIMIT -1
+
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+COPY --from=composer:%%COMPOSER_VERSION%% /usr/bin/composer /usr/bin/composer
+RUN curl https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -o /usr/local/bin/wait-for-it && \
+    chmod +x /usr/local/bin/wait-for-it
+
+RUN install-php-extensions pdo_mysql mysqli gd exif zip intl opcache imagick redis apcu
+
+# pimcore dependencies
+RUN apt-get update && \
+    apt-get install -yf \
+        unzip \
+        ffmpeg \
+        wkhtmltopdf \
+        libreoffice \
+        libimage-exiftool-perl \
+        libreoffice libreoffice-script-provider-python libreoffice-math xfonts-75dpi poppler-utils inkscape libxrender1 libfontconfig1 ghostscript \
+        webp \
+        graphviz \
+        facedetect \
+        pngcrush && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN curl https://github.com/imagemin/mozjpeg-bin/blob/main/vendor/linux/cjpeg -o /usr/local/bin/cjpeg && chmod +x /usr/local/bin/cjpeg && \
+    curl https://github.com/imagemin/jpegoptim-bin/blob/main/vendor/linux/jpegoptim -o /usr/local/bin/jpegoptim && chmod +x /usr/local/bin/jpegoptim && \
+    curl https://github.com/imagemin/pngout-bin/blob/main/vendor/linux/x64/pngout -o /usr/local/bin/pngout && chmod +x /usr/local/bin/pngout && \
+    curl https://github.com/imagemin/advpng-bin/blob/main/vendor/linux/advpng -o /usr/local/bin/advpng && chmod +x /usr/local/bin/advpng && \
+    curl https://github.com/imagemin/mozjpeg-bin/blob/main/vendor/linux/cjpeg -o /usr/local/bin/cjpeg && chmod +x /usr/local/bin/cjpeg && \
+    curl https://github.com/imagemin/zopflipng-bin/blob/main/vendor/linux/zopflipng -o /usr/local/bin/zopflipng && chmod +x /usr/local/bin/zopflipng
+
+RUN mkdir "$COMPOSER_HOME" && chown -R 1000:1000 "$COMPOSER_HOME"
+
+WORKDIR /var/www/html
+
+RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY pimcore.ini "$PHP_INI_DIR/conf.d/pimcore.ini"
