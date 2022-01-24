@@ -15,6 +15,7 @@ RUN install-php-extensions pdo_mysql mysqli gd exif zip intl opcache imagick red
 # pimcore dependencies
 RUN apt-get update && \
     apt-get install -yf \
+        supervisor \
         unzip \
         ffmpeg \
         wkhtmltopdf \
@@ -23,6 +24,8 @@ RUN apt-get update && \
         pngcrush && \
     rm -rf /var/lib/apt/lists/* && \
     curl https://github.com/imagemin/mozjpeg-bin/blob/main/vendor/linux/cjpeg -o /usr/local/bin/cjpeg && chmod +x /usr/local/bin/cjpeg
+
+COPY supervisord.conf /etc/supervisor/supervisord.conf
 
 RUN mkdir "$COMPOSER_HOME" && chown -R 1000:1000 "$COMPOSER_HOME"
 

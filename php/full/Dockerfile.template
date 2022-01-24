@@ -15,6 +15,7 @@ RUN install-php-extensions pdo_mysql mysqli gd exif zip intl opcache imagick red
 # pimcore dependencies
 RUN apt-get update && \
     apt-get install -yf \
+        supervisor \
         unzip \
         ffmpeg \
         wkhtmltopdf \
@@ -26,6 +27,8 @@ RUN apt-get update && \
         facedetect \
         pngcrush && \
     rm -rf /var/lib/apt/lists/*
+
+COPY supervisord.conf /etc/supervisor/supervisord.conf
 
 RUN curl https://github.com/imagemin/mozjpeg-bin/blob/main/vendor/linux/cjpeg -o /usr/local/bin/cjpeg && chmod +x /usr/local/bin/cjpeg && \
     curl https://github.com/imagemin/jpegoptim-bin/blob/main/vendor/linux/jpegoptim -o /usr/local/bin/jpegoptim && chmod +x /usr/local/bin/jpegoptim && \

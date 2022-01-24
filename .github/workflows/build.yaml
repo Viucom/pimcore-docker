@@ -65,40 +65,4 @@ jobs:
         with:
           context: php
           push: true
-          tags: viucomlg/pimcore-php:${{ matrix.php_version }}-${{ matrix.php_distro }}-${{ matrix.variant }}
-
-  build-php-supervisor:
-    needs: build-php
-    name: "Build PHP supervisor images"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        variant: ['full', 'slim']
-        php_version: ['8.0']
-        php_distro: ['bullseye']
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-      
-      - name: Login to DockerHub
-        uses: docker/login-action@v1 
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
-      - name: run update script
-        env:
-            php_version: ${{ matrix.php_version }}
-            php_distro: ${{ matrix.php_distro }}
-            variant: ${{ matrix.variant }}
-        working-directory: ./php
-        run: ./generate.sh supervisor
-
-      - name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          context: php
-          push: true
-          tags: viucomlg/pimcore-php:${{ matrix.php_version }}-${{ matrix.php_distro }}-${{ matrix.variant }}-supervisor
+          tags: ${{ env.PHP_REPOSITORY }}:${{ matrix.php_version }}-${{ matrix.php_distro }}-${{ matrix.variant }}
