@@ -7,6 +7,11 @@ on:
     branches:
       - main
 
+env:
+  APACHE_REPOSITORY: viucom/pimcore-apache
+  PHP_REPOSITORY: viucom/pimcore-php
+  COMPOSER_VERSION: 2.2
+
 jobs:
   build-apache:
     name: "Build Apache image"
@@ -28,7 +33,7 @@ jobs:
         with:
           context: apache
           push: true
-          tags: viucomlg/pimcore-apache:2.4-alpine
+          tags: ${{ env.APACHE_REPOSITORY }}:2.4-alpine
   
   build-php:
     name: "Build PHP fpm images"
@@ -36,9 +41,8 @@ jobs:
     strategy:
       matrix:
         variant: ['full', 'slim']
-        php_version: ['8.0']
+        php_version: ['8.0', '8.1']
         php_distro: ['bullseye']
-        composer_version: ['2.2']
         
     steps:
       - uses: actions/checkout@v2
@@ -49,7 +53,7 @@ jobs:
         env:
           php_version: ${{ matrix.php_version }}
           php_distro: ${{ matrix.php_distro }}
-          composer_version: ${{ matrix.composer_version }}
+          composer_version: ${{ env.COMPOSER_VERSION }}
         working-directory: ./php
         run: ./generate.sh ${{ matrix.variant }}
 
